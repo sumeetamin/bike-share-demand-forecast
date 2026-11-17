@@ -1,0 +1,19 @@
+{
+  "rows": 17355,
+  "input_sha256": "f52d7db575d4d8dd4633ab1e39d501e8cc77fc9e2f3352802afbfd0e8cb5bafa",
+  "source_date_range": [
+    "2011-01-01",
+    "2012-12-31"
+  ],
+  "train_rows": 13884,
+  "test_rows": 3471,
+  "mae": 38.810265050769615,
+  "rmse": 58.77903238417549,
+  "lag_1_baseline_mae": 146.476231633535,
+  "lag_24_baseline_mae": 168.56640737539615,
+  "split": "last 20% by time; one-step-ahead lag features use previously observed counts",
+  "source_url": "https://archive.ics.uci.edu/dataset/275/bike%2Bsharing%2Bdataset",
+  "benchmark_date": "2026-11-17",
+  "method": "HistGradientBoosting; first 80% train, last 20% forward holdout; lag-1 and lag-24 comparisons; seed 42",
+  "label": "hourly cnt, one-step ahead"
+}
