@@ -1,38 +1,31 @@
 # Bike Share Demand Forecast
 
-A chronological gradient-boosting demand forecast with lag features, MAE/RMSE, holdout forecasts, and a serialized estimator.
+A chronological one-step-ahead hourly demand forecast using lagged demand, calendar and weather features.
 
-> **Portfolio prototype.** Code is provided; no benchmark results are claimed until you run it on the cited data and record the output.
+## Dataset
 
-## Use case
+[UCI Bike Sharing dataset (ID 275)](https://archive.ics.uci.edu/dataset/275/bike%2Bsharing%2Bdataset), with 17,379 hourly observations. The project uses the hourly `hour.csv` table and target `cnt`. UCI dataset citation: Fanaee-T (2013), DOI [10.24432/C5W894](https://doi.org/10.24432/C5W894). The dataset describes Washington, D.C. bike-share usage in 2011–2012.
 
-A chronological gradient-boosting demand forecast with lag features, MAE/RMSE, holdout forecasts, and a serialized estimator. The command below reads a local data export, applies a transparent baseline, writes holdout or decision-support outputs, and saves the fitted model where applicable.
-
-## Data and provenance
-
-[UCI Bike Sharing Dataset](https://archive.ics.uci.edu/dataset/275/bike+sharing+dataset). UCI `hour.csv` or compatible CSV with `dteday` and `cnt` columns in chronological order. Dataset files are not bundled. Respect the source terms and cite the dataset when publishing results.
-
-## Quick start
+## Run
 
 ```bash
-python -m venv .venv
-# Windows: .venv\\Scripts\\activate
-# macOS/Linux: source .venv/bin/activate
-pip install -r requirements.txt
-# Download/prepare the source data locally, then run:
-python main.py --input data/hour.csv --date dteday --target cnt --out outputs
+python -m pip install -r requirements.txt
+python -c "from ucimlrepo import fetch_ucirepo; import pandas as pd; d=fetch_ucirepo(id=275); pd.concat([d.data.features,d.data.targets],axis=1).to_csv('hour.csv',index=False)"
+python main.py --input hour.csv --out outputs
 ```
 
-## Outputs
+The runner saves local metrics, chronological forecasts, and a serialized estimator. Data and outputs are Git-ignored.
 
-The `outputs/` directory contains the model-specific results (metrics and/or ranked CSV) and a serialized estimator where applicable. Outputs are reproducible with the same input, package versions, and random seed. The repository intentionally excludes downloaded data and generated artifacts.
+## Holdout results
 
-## Evaluation and operating notes
+The last 20% of time-ordered rows are the holdout (3,471 hours); evaluation is one-step-ahead, using previously observed counts for lag features.
 
-Historical demand is not a guarantee of future demand. The first lag features assume rows are a regular time grid; remove gaps or resample explicitly before relying on them.
+| Model | MAE (rides/hour) | RMSE (rides/hour) |
+|---|---:|---:|
+| HistGradientBoosting with lag/calendar/weather features | 38.81 | 58.78 |
+| Previous-hour count (lag-1 baseline) | 146.48 | — |
+| Previous-day count (lag-24 baseline) | 168.57 | — |
 
-For a production review, preserve a time-based, untouched holdout; compare against a simple business baseline; inspect calibration and subgroup error; document data lineage; and monitor drift. The included baseline is not a production service.
+This is a single forward split, not a multi-day forecast experiment. The historical two-year dataset does not establish performance for present-day demand, new stations, or a different city. Validate future forecast horizons and station-level operational constraints before planning rebalancing.
 
-## License
-
-No code license file is included yet. Third-party datasets remain subject to their original terms.
+Full aggregate metrics are in [`reports/benchmark.json`](reports/benchmark.json).
